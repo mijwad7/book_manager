@@ -15,8 +15,33 @@ class UserViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    def perform_create(self, serializer):
-        serializer.save()
+    def get_queryset(self):
+        # Restrict users to only their own profile
+        if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
+            return User.objects.filter(id=self.request.user.id)
+        return User.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        # Ensure users can only retrieve their own profile
+        instance = self.get_object()
+        if instance != request.user:
+            return Response({'error': 'You can only view your own profile'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        # Ensure users can only update their own profile
+        instance = self.get_object()
+        if instance != request.user:
+            return Response({'error': 'You can only update your own profile'}, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Ensure users can only delete their own profile
+        instance = self.get_object()
+        if instance != request.user:
+            return Response({'error': 'You can only delete your own profile'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
