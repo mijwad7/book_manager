@@ -30,6 +30,13 @@ class BookViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.created_by != request.user:
+            return Response({'error': 'You can only delete your own books'}, status=status.HTTP_403_FORBIDDEN)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class ReadingListViewSet(viewsets.ModelViewSet):
     serializer_class = ReadingListSerializer
 
