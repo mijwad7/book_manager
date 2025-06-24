@@ -11,18 +11,17 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action in ['create']:
+        if self.action in ['create', 'list']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        # Restrict users to only their own profile
+        # Restrict users to only their own profile for relevant actions
         if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             return User.objects.filter(id=self.request.user.id)
-        return User.objects.all()
+        return User.objects.none()  # Return empty queryset for list/create to avoid unnecessary data exposure
 
     def retrieve(self, request, *args, **kwargs):
-        # Ensure users can only retrieve their own profile
         instance = self.get_object()
         if instance != request.user:
             return Response({'error': 'You can only view your own profile'}, status=status.HTTP_403_FORBIDDEN)
@@ -30,14 +29,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
-        # Ensure users can only update their own profile
         instance = self.get_object()
         if instance != request.user:
             return Response({'error': 'You can only update your own profile'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        # Ensure users can only delete their own profile
         instance = self.get_object()
         if instance != request.user:
             return Response({'error': 'You can only delete your own profile'}, status=status.HTTP_403_FORBIDDEN)
