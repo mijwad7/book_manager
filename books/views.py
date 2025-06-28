@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
 from .models import Book, ReadingList, ReadingListItem
 from .serializers import UserSerializer, BookSerializer, ReadingListSerializer, ReadingListItemSerializer
-from django.core.paginator import Paginator
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -62,7 +61,6 @@ class BookViewSet(viewsets.ModelViewSet):
 
 class ReadingListViewSet(viewsets.ModelViewSet):
     serializer_class = ReadingListSerializer
-    pagination_class = Paginator
 
     def get_queryset(self):
         return ReadingList.objects.filter(user=self.request.user)
