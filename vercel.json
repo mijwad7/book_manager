@@ -1,0 +1,29 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "book_manager/wsgi.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "15mb"
+            }
+        },
+        {
+            "src": "staticfiles/**",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/static/(.*)",
+            "dest": "/staticfiles/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "book_manager/wsgi.py"
+        }
+    ],
+    "env": {
+        "DJANGO_SETTINGS_MODULE": "book_manager.settings"
+    }
+}
