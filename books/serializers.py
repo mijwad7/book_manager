@@ -47,13 +47,6 @@ class BookSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'authors', 'genre', 'publication_date', 'description', 'created_by', 'created_at']
         read_only_fields = ['created_by', 'created_at']
 
-class ReadingListSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=255, validators=[no_special_chars])
-
-    class Meta:
-        model = ReadingList
-        fields = ['id', 'name', 'user', 'created_at']
-        read_only_fields = ['user', 'created_at']
 
 class ReadingListItemSerializer(serializers.ModelSerializer):
     book = BookSerializer(read_only=True)
@@ -79,3 +72,12 @@ class ReadingListItemSerializer(serializers.ModelSerializer):
         if value.user != self.context['request'].user:
             raise serializers.ValidationError("You can only add items to your own reading lists.")
         return value
+
+class ReadingListSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=255, validators=[no_special_chars])
+    items = ReadingListItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ReadingList
+        fields = ['id', 'name', 'user', 'created_at', 'items']
+        read_only_fields = ['user', 'created_at', 'items']
