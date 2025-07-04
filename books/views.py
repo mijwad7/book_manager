@@ -16,10 +16,19 @@ class UserViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        # Restrict users to only their own profile for relevant actions
         if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             return User.objects.filter(id=self.request.user.id)
-        return User.objects.none()  # Return empty queryset for list/create to avoid unnecessary data exposure
+        return User.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({
+            'message': 'User created successfully',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

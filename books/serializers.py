@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
 from .models import Book, ReadingList, ReadingListItem
+
+# Validator to prevent HTML tags and special characters
+no_special_chars = RegexValidator(
+    regex=r'^[^<>#&]*$',
+    message='This field cannot contain HTML tags or special characters like #, <, >, &.'
+)
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,10 +17,10 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {
                 'write_only': True,
                 'style': {'input_type': 'password'},
-                'required': False  # Allow partial updates without password
+                'required': False
             },
-            'username': {'required': False},  # Allow partial updates without username
-            'email': {'required': False},  # Allow partial updates without email
+            'username': {'required': False},
+            'email': {'required': False},
         }
 
     def create(self, validated_data):
@@ -21,23 +28,28 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        # Handle password hashing during updates
         password = validated_data.pop('password', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password is not None:
-            instance.set_password(password)  # Hash the password
+            instance.set_password(password)
         instance.save()
         return instance
 
-
 class BookSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(max_length=255, validators=[no_special_chars])
+    authors = serializers.CharField(max_length=255, validators=[no_special_chars])
+    genre = serializers.CharField(max_length=100, validators=[no_special_chars])
+    description = serializers.CharField(allow_blank=True, required=False, validators=[no_special_chars])
+
     class Meta:
         model = Book
         fields = ['id', 'title', 'authors', 'genre', 'publication_date', 'description', 'created_by', 'created_at']
         read_only_fields = ['created_by', 'created_at']
 
 class ReadingListSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=255, validators=[no_special_chars])
+
     class Meta:
         model = ReadingList
         fields = ['id', 'name', 'user', 'created_at']

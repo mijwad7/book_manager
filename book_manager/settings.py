@@ -58,6 +58,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 
 MIDDLEWARE = [
@@ -94,28 +96,28 @@ WSGI_APPLICATION = "book_manager.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 
 # Replace the DATABASES section of your settings.py with this
-tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+# tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
-        'USER': tmpPostgres.username,
-        'PASSWORD': tmpPostgres.password,
-        'HOST': tmpPostgres.hostname,
-        'PORT': 5432,
-        'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': tmpPostgres.path.replace('/', ''),
+#         'USER': tmpPostgres.username,
+#         'PASSWORD': tmpPostgres.password,
+#         'HOST': tmpPostgres.hostname,
+#         'PORT': 5432,
+#         'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+#     }
+# }
 
 
 # Password validation
